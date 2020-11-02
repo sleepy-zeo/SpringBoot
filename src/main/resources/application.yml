@@ -1,0 +1,21 @@
+spring:
+ profiles:
+  active: debug
+
+manager:
+ username: sleepy zeo
+ age: 24
+ lang: python, java, cpp
+ websites: "{yaml: 'yaml.org', python: 'python.org', perl: 'use.perl.org'}"
+
+employee:
+ username: vaadhoo
+ age: 27
+ lang:
+  - python
+  - java
+  - cpp
+ websites:
+  yaml: yaml.org
+  python: python.org
+  perl: use.perl.org
