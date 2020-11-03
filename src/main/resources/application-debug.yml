@@ -1,2 +1,18 @@
 server:
  port: 7077
+
+spring:
+ resources:
+  # 资源路径，可以通过http://xxx:xxxx/xxx.png直接访问资源
+  static-locations:
+   - classpath:/static/
+ # 配置String到View的映射
+ thymeleaf:
+  prefix: classpath:/templates/
+  suffix: .html
+  # 关闭缓存
+  cache: false
+ servlet:
+  multipart:
+   max-file-size: 1024000000
+   max-request-size: 4096000000

@@ -2,8 +2,8 @@
 
 ## 什么是Spring Boot
 
-- Spring Boot通过pom.xml构建项目，简化了使用Spring的各种繁琐配置
-- Spring Boot本质上就是一个整合很多可插拔的组件的框架，提供了默认配置，并且开发者可以根据需求修改参数配置
+- Spring Boot通过pom.xml构建项目
+- Spring Boot的核心就是约定大于配置，即Spring Boot是一个整合很多可插拔的组件的框架，提供了约定好的默认配置，开发者根据需求修改参数配置
 
 ## Spring Boot配置文件
 
@@ -16,4 +16,17 @@
 spring:
  profiles:
   active: profile
+```
+
+## Spring Boot默认资源目录
+
+Spring Boot的默认静态资源文件加载路径(前面路径的优先级要高于后面的路径)为：
+```yml
+spring:
+ resources:
+  static-locations:
+   - classpath:/META-INF/resources/
+   - classpath:/resources/
+   - classpath:/static/
+   - classpath:/public/
 ```
