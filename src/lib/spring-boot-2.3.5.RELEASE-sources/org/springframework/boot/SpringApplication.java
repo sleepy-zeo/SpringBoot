@@ -300,7 +300,7 @@ public class SpringApplication {
 	 * @return a running {@link ApplicationContext}
 	 */
 	public ConfigurableApplicationContext run(String... args) {
-		// 非应用程序的一部分，用来监控开发中应用的性能
+		// 统计每项任务执行时长，比如Spring Boot启动时长
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
@@ -308,6 +308,7 @@ public class SpringApplication {
 		Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
 		configureHeadlessProperty();
 
+		// SpringApplicationRunListener的实例化工作
 		SpringApplicationRunListeners listeners = getRunListeners(args);
 		listeners.starting();
 
@@ -439,8 +440,12 @@ public class SpringApplication {
 		return getSpringFactoriesInstances(type, new Class<?>[] {});
 	}
 
-	// type为ApplicationContextInitializer.class
-	// 其余均为null
+	/**
+	 * getSpringFactoriesInstances
+	 *
+	 * 作用: 实例化META-INF/spring.factories文件中的对象
+	 * 位置: 文件META-INF/spring.factories存放在spring-boot.jar和spring-boot-autoconfigure.jar中
+	 */
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes, Object... args) {
 		ClassLoader classLoader = getClassLoader();
 		// Use names and ensure unique to protect against duplicates
