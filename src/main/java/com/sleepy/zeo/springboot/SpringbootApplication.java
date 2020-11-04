@@ -23,6 +23,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class SpringbootApplication {
 
     public static void main(String[] args) {
+
+        StackTraceElement[] stackTrace = new RuntimeException().getStackTrace();
+        for (StackTraceElement stackTraceElement : stackTrace) {
+            System.out.println("==>" + stackTraceElement);
+        }
+
+        // Step 1. Spring Boot启动入口
         SpringApplication.run(SpringbootApplication.class, args);
     }
 

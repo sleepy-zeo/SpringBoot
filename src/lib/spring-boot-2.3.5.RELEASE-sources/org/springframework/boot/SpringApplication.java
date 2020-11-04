@@ -263,6 +263,7 @@ public class SpringApplication {
 	 * @see #run(Class, String[])
 	 * @see #setSources(Set)
 	 */
+	// 首先调用了SpringApplication的构造函数
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
 		this.resourceLoader = resourceLoader;
@@ -275,9 +276,12 @@ public class SpringApplication {
 	}
 
 	private Class<?> deduceMainApplicationClass() {
+		// 构造一个运行时异常，通过异常栈中方法名为main的栈帧来得到入口类的名字
 		try {
 			StackTraceElement[] stackTrace = new RuntimeException().getStackTrace();
 			for (StackTraceElement stackTraceElement : stackTrace) {
+				// className: com.sleepy.zeo.springboot.SpringbootApplication
+				// methodName: main
 				if ("main".equals(stackTraceElement.getMethodName())) {
 					return Class.forName(stackTraceElement.getClassName());
 				}
@@ -296,24 +300,37 @@ public class SpringApplication {
 	 * @return a running {@link ApplicationContext}
 	 */
 	public ConfigurableApplicationContext run(String... args) {
+		// 非应用程序的一部分，用来监控开发中应用的性能
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
+
 		ConfigurableApplicationContext context = null;
 		Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
 		configureHeadlessProperty();
+
 		SpringApplicationRunListeners listeners = getRunListeners(args);
 		listeners.starting();
+
 		try {
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+
+			// prepare environment
 			ConfigurableEnvironment environment = prepareEnvironment(listeners, applicationArguments);
 			configureIgnoreBeanInfo(environment);
+
+			// 启动Spring Boot的时候打印在console上的ASCII艺术字体
 			Banner printedBanner = printBanner(environment);
+
+			// 创建Spring上下文
 			context = createApplicationContext();
 			exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
-					new Class[] { ConfigurableApplicationContext.class }, context);
+					new Class[]{ConfigurableApplicationContext.class}, context);
+
+			// 针对context的前中后处理
 			prepareContext(context, environment, listeners, applicationArguments, printedBanner);
 			refreshContext(context);
 			afterRefresh(context, applicationArguments);
+
 			stopWatch.stop();
 			if (this.logStartupInfo) {
 				new StartupInfoLogger(this.mainApplicationClass).logStarted(getApplicationLog(), stopWatch);
@@ -416,10 +433,14 @@ public class SpringApplication {
 				getSpringFactoriesInstances(SpringApplicationRunListener.class, types, this, args));
 	}
 
+	// setInitializers(getSpringFactoriesInstances(ApplicationContextInitializer.class));
+	// setListeners(getSpringFactoriesInstances(ApplicationListener.class));
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type) {
 		return getSpringFactoriesInstances(type, new Class<?>[] {});
 	}
 
+	// type为ApplicationContextInitializer.class
+	// 其余均为null
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes, Object... args) {
 		ClassLoader classLoader = getClassLoader();
 		// Use names and ensure unique to protect against duplicates
@@ -432,6 +453,13 @@ public class SpringApplication {
 	@SuppressWarnings("unchecked")
 	private <T> List<T> createSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes,
 			ClassLoader classLoader, Object[] args, Set<String> names) {
+		//
+		// names:
+		// "org.springframework.boot.context.ConfigurationWarningsApplicationContextInitializer1"
+		// "org.springframework.boot.context.ContextIdApplicationContextInitializer1"
+		// "org.springframework.boot.web.context.ServerPortInfoApplicationContextInitializer1"
+		// ...
+		//
 		List<T> instances = new ArrayList<>(names.size());
 		for (String name : names) {
 			try {
@@ -1234,6 +1262,7 @@ public class SpringApplication {
 	 * @return the running {@link ApplicationContext}
 	 */
 	public static ConfigurableApplicationContext run(Class<?>[] primarySources, String[] args) {
+		// Step 2. SpringApplication.run(SpringbootApplication.class, args)最终跳转到这里
 		return new SpringApplication(primarySources).run(args);
 	}
 

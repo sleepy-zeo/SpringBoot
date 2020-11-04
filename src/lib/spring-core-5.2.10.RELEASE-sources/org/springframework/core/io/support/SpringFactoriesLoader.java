@@ -122,7 +122,30 @@ public final class SpringFactoriesLoader {
 		return loadSpringFactories(classLoader).getOrDefault(factoryTypeName, Collections.emptyList());
 	}
 
+	//
+    // cache:
+    //    classloader1: {
+    //        "org.springframework.boot.env.PropertySourceLoader1"
+    //            -> ["org.springframework.boot.env.PropertiesPropertySourceLoader1",
+    //            "org.springframework.boot.env.YamlPropertySourceLoader1"],
+    //        "org.springframework.boot.SpringApplicationRunListener1"
+    //            -> ["org.springframework.boot.context.event.EventPublishingRunListener1"],
+    //        "org.springframework.context.ApplicationContextInitializer1"
+    //            -> ["org.springframework.boot.context.ConfigurationWarningsApplicationContextInitializer1",
+    //            "org.springframework.boot.context.ContextIdApplicationContextInitializer1",
+    //            "org.springframework.boot.web.context.ServerPortInfoApplicationContextInitializer1"],
+    //    }
+    //    classloader2: {
+    //        "org.springframework.boot.env.PropertySourceLoader2"
+    //            -> ["org.springframework.boot.env.PropertiesPropertySourceLoader2",
+    //            "org.springframework.boot.env.YamlPropertySourceLoader2"],
+    //        "org.springframework.boot.SpringBootExceptionReporter2"
+    //            -> ["org.springframework.boot.diagnostics.FailureAnalyzers2"],
+    //    }
+    //    ...
+    //
 	private static Map<String, List<String>> loadSpringFactories(@Nullable ClassLoader classLoader) {
+		// cache中取数据，如果取出不为空，则直接返回
 		MultiValueMap<String, String> result = cache.get(classLoader);
 		if (result != null) {
 			return result;
@@ -144,6 +167,7 @@ public final class SpringFactoriesLoader {
 					}
 				}
 			}
+			// cache中存数据
 			cache.put(classLoader, result);
 			return result;
 		}
