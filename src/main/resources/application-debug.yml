@@ -16,3 +16,11 @@ spring:
   multipart:
    max-file-size: 1024000000
    max-request-size: 4096000000
+ datasource:
+  url: jdbc:mysql://localhost:3306/sleepy?characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+  driver-class-name: com.mysql.cj.jdbc.Driver
+  username: root
+  password: 1994
+
+mybatis:
+ mapper-locations: classpath:/mappers/*.xml

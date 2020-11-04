@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--
+    namespace
+        对应一个dao接口
+    id(select insert update delete)
+        对应dao接口中的方法名
+    parameterType
+        单一参数时，指定参数的类型，不需要明确指出，框架会自动推导
+    parameterMap
+        @deprecated
+    resultType
+        指定返回值的类型
+    resultMap
+        用于解决Table的字段名和Bean的属性名不一致的情况，建立了Table的字段名到Bean的属性名的一一对应
+    statementType
+        默认为PREPARED，有三种取值: PREPARED STATEMENT CALLABLE
+    flushCache
+        默认为true，当语句被调用后，会使本地缓存和二级缓存被清空
+    timeout
+        默认依赖驱动，在抛出异常之前，驱动程序等待数据库返回请求结果的秒数
+-->
+<mapper namespace="com.sleepy.zeo.springboot.database.mybatis.dao.CustomerDao">
+    <select id="fetchCustomer" resultType="com.sleepy.zeo.springboot.database.mybatis.pojo.CustomerBean">
+        select * from t_customer where id = #{id}
+    </select>
+
+    <select id="fetchCustomers" resultType="com.sleepy.zeo.springboot.database.mybatis.pojo.CustomerBean">
+        select * from t_customer where grade = #{grade} and age = #{age}
+    </select>
+
+    <select id="fetchAllCustomers" resultType="com.sleepy.zeo.springboot.database.mybatis.pojo.CustomerBean">
+        select * from t_customer
+    </select>
+
+    <!--
+        获取自增的主键值
+
+        selectKey: 获取数据库产生的主键值，必须要是数据库自动生成的，否则获取到的就是0
+        order
+            BEFORE：在insert之前
+            AFTER：之insert后
+        resultType: 主键类型
+        keyColumn：主键名
+        keyProperty: 把获取到的主键值赋给对象的哪个属性
+    -->
+    <insert id="insert">
+        <selectKey keyProperty="id" keyColumn="id" resultType="int" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into t_customer(`name`,password,grade,age,gender,telephone)
+        values(#{name},#{password},#{grade},#{age},#{gender},#{telephone})
+    </insert>
+
+    <delete id="delete">
+        delete from t_customer where id = #{id}
+    </delete>
+
+    <update id="update">
+        update t_customer set `name` = #{name}, password=#{password}, grade=#{grade}, age=#{age}, gender=#{gender}, telephone=#{telephone}
+        where id=#{id}
+    </update>
+</mapper>
