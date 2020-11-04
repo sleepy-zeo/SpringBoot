@@ -2,6 +2,7 @@ package com.sleepy.zeo.springboot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 
 /**
  * SpringBootApplication由@SpringBootConfiguration @EnableAutoConfiguration @ComponentScan三个注解组成
@@ -20,6 +21,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *      自动扫描并加载符合条件的组件或Bean，将这些实例加载到当前使用的容器中
  */
 @SpringBootApplication
+@ServletComponentScan
 public class SpringbootApplication {
 
     public static void main(String[] args) {
