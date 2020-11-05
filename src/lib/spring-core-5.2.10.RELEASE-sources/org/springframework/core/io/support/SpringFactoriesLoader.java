@@ -108,42 +108,64 @@ public final class SpringFactoriesLoader {
 	}
 
 	/**
-	 * Load the fully qualified class names of factory implementations of the
-	 * given type from {@value #FACTORIES_RESOURCE_LOCATION}, using the given
-	 * class loader.
-	 * @param factoryType the interface or abstract class representing the factory
-	 * @param classLoader the ClassLoader to use for loading resources; can be
-	 * {@code null} to use the default
-	 * @throws IllegalArgumentException if an error occurs while loading factory names
-	 * @see #loadFactories
+	 * Step 2. loadFactoryNames
+	 *
+	 * factoryTypeName: 字符串，比如"org.springframework.boot.autoconfigure.AutoConfigurationImportFilter"
+	 *
+	 * 返回类似于
+	 * org.springframework.boot.env.SpringApplicationJsonEnvironmentPostProcessor,
+	 * org.springframework.boot.env.SystemEnvironmentPropertySourceEnvironmentPostProcessor,
+	 * org.springframework.boot.reactor.DebugAgentEnvironmentPostProcessor
+	 * 组成的List
 	 */
 	public static List<String> loadFactoryNames(Class<?> factoryType, @Nullable ClassLoader classLoader) {
 		String factoryTypeName = factoryType.getName();
 		return loadSpringFactories(classLoader).getOrDefault(factoryTypeName, Collections.emptyList());
 	}
 
-	//
-    // cache:
-    //    classloader1: {
-    //        "org.springframework.boot.env.PropertySourceLoader1"
-    //            -> ["org.springframework.boot.env.PropertiesPropertySourceLoader1",
-    //            "org.springframework.boot.env.YamlPropertySourceLoader1"],
-    //        "org.springframework.boot.SpringApplicationRunListener1"
-    //            -> ["org.springframework.boot.context.event.EventPublishingRunListener1"],
-    //        "org.springframework.context.ApplicationContextInitializer1"
-    //            -> ["org.springframework.boot.context.ConfigurationWarningsApplicationContextInitializer1",
-    //            "org.springframework.boot.context.ContextIdApplicationContextInitializer1",
-    //            "org.springframework.boot.web.context.ServerPortInfoApplicationContextInitializer1"],
-    //    }
-    //    classloader2: {
-    //        "org.springframework.boot.env.PropertySourceLoader2"
-    //            -> ["org.springframework.boot.env.PropertiesPropertySourceLoader2",
-    //            "org.springframework.boot.env.YamlPropertySourceLoader2"],
-    //        "org.springframework.boot.SpringBootExceptionReporter2"
-    //            -> ["org.springframework.boot.diagnostics.FailureAnalyzers2"],
-    //    }
-    //    ...
-    //
+	/**
+	 * Step 3. loadSpringFactories
+	 *
+	 * urls:
+	 * 大致可以表述为所有的spring_factories文件的路径组成的集合
+	 *
+	 * properties:
+	 * 	entry1:
+	 * 		org.springframework.boot.env.EnvironmentPostProcessor=\
+	 * 		org.springframework.boot.cloud.CloudFoundryVcapEnvironmentPostProcessor,\
+	 * 		org.springframework.boot.env.SpringApplicationJsonEnvironmentPostProcessor,\
+	 * 		org.springframework.boot.env.SystemEnvironmentPropertySourceEnvironmentPostProcessor,\
+	 * 		org.springframework.boot.reactor.DebugAgentEnvironmentPostProcessor
+	 * 	entry2:
+	 * 		org.springframework.context.ApplicationListener=\
+	 * 		org.springframework.boot.autoconfigure.BackgroundPreinitializer
+	 *  entry3:
+	 * 		org.springframework.context.ApplicationContextInitializer=\
+	 * 		org.springframework.boot.autoconfigure.SharedMetadataReaderFactoryContextInitializer,\
+	 * 		org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener
+	 * 	...
+	 *
+	 * cache:
+	 *    classloader1: {
+	 *        "org.springframework.boot.env.PropertySourceLoader1"
+	 *            -> ["org.springframework.boot.env.PropertiesPropertySourceLoader1",
+	 *            "org.springframework.boot.env.YamlPropertySourceLoader1"],
+	 *        "org.springframework.boot.SpringApplicationRunListener1"
+	 *            -> ["org.springframework.boot.context.event.EventPublishingRunListener1"],
+	 *        "org.springframework.context.ApplicationContextInitializer1"
+	 *            -> ["org.springframework.boot.context.ConfigurationWarningsApplicationContextInitializer1",
+	 *            "org.springframework.boot.context.ContextIdApplicationContextInitializer1",
+	 *            "org.springframework.boot.web.context.ServerPortInfoApplicationContextInitializer1"],
+	 *    }
+	 *    classloader2: {
+	 *        "org.springframework.boot.env.PropertySourceLoader2"
+	 *            -> ["org.springframework.boot.env.PropertiesPropertySourceLoader2",
+	 *            "org.springframework.boot.env.YamlPropertySourceLoader2"],
+	 *        "org.springframework.boot.SpringBootExceptionReporter2"
+	 *            -> ["org.springframework.boot.diagnostics.FailureAnalyzers2"],
+	 *    }
+	 *    ...
+	 */
 	private static Map<String, List<String>> loadSpringFactories(@Nullable ClassLoader classLoader) {
 		// cache中取数据，如果取出不为空，则直接返回
 		MultiValueMap<String, String> result = cache.get(classLoader);

@@ -441,15 +441,18 @@ public class SpringApplication {
 	}
 
 	/**
-	 * getSpringFactoriesInstances
+	 * Step 1. getSpringFactoriesInstances
 	 *
 	 * 作用: 实例化META-INF/spring.factories文件中的对象
 	 * 位置: 文件META-INF/spring.factories存放在spring-boot.jar和spring-boot-autoconfigure.jar中
+	 *
+	 * @param type: 例如AutoConfigurationImportFilter.class
 	 */
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes, Object... args) {
 		ClassLoader classLoader = getClassLoader();
-		// Use names and ensure unique to protect against duplicates
+		// 用set进行去重
 		Set<String> names = new LinkedHashSet<>(SpringFactoriesLoader.loadFactoryNames(type, classLoader));
+		// TODO: ...
 		List<T> instances = createSpringFactoriesInstances(type, parameterTypes, classLoader, args, names);
 		AnnotationAwareOrderComparator.sort(instances);
 		return instances;
