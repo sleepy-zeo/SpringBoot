@@ -452,22 +452,27 @@ public class SpringApplication {
 		ClassLoader classLoader = getClassLoader();
 		// 用set进行去重
 		Set<String> names = new LinkedHashSet<>(SpringFactoriesLoader.loadFactoryNames(type, classLoader));
-		// TODO: ...
+		// 根据name创建实例
 		List<T> instances = createSpringFactoriesInstances(type, parameterTypes, classLoader, args, names);
+		// 将实例进行排序后返回
 		AnnotationAwareOrderComparator.sort(instances);
 		return instances;
 	}
 
-	@SuppressWarnings("unchecked")
+    /**
+     * Step 4. createSpringFactoriesInstances
+     *
+     * 作用: 将names中的每一个字符串转换成对应的实例
+     *
+     * @param names
+     * 		org.springframework.boot.env.SpringApplicationJsonEnvironmentPostProcessor,
+     * 		org.springframework.boot.env.SystemEnvironmentPropertySourceEnvironmentPostProcessor,
+     * 		org.springframework.boot.reactor.DebugAgentEnvironmentPostProcessor
+     *
+     * @return 返回对应实例的链表
+     */
 	private <T> List<T> createSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes,
 			ClassLoader classLoader, Object[] args, Set<String> names) {
-		//
-		// names:
-		// "org.springframework.boot.context.ConfigurationWarningsApplicationContextInitializer1"
-		// "org.springframework.boot.context.ContextIdApplicationContextInitializer1"
-		// "org.springframework.boot.web.context.ServerPortInfoApplicationContextInitializer1"
-		// ...
-		//
 		List<T> instances = new ArrayList<>(names.size());
 		for (String name : names) {
 			try {
