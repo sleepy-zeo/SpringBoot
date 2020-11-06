@@ -44,6 +44,7 @@ class SpringApplicationRunListeners {
 
 	void starting() {
 		for (SpringApplicationRunListener listener : this.listeners) {
+			// Step 2. 启动每一个SpringApplicationRunListener
 			listener.starting();
 		}
 	}

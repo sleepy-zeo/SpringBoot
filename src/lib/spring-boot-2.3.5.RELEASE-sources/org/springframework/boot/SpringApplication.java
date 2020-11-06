@@ -310,6 +310,7 @@ public class SpringApplication {
 
 		// SpringApplicationRunListener的实例化工作
 		SpringApplicationRunListeners listeners = getRunListeners(args);
+		// Step 1. 启动listeners
 		listeners.starting();
 
 		try {
@@ -322,14 +323,17 @@ public class SpringApplication {
 			// 启动Spring Boot的时候打印在console上的ASCII艺术字体
 			Banner printedBanner = printBanner(environment);
 
-			// 创建Spring上下文
+			// 创建ApplicationContext对象
 			context = createApplicationContext();
 			exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
 					new Class[]{ConfigurableApplicationContext.class}, context);
 
-			// 针对context的前中后处理
+			// 初始化ApplicationContext对象
 			prepareContext(context, environment, listeners, applicationArguments, printedBanner);
+			// refresh context
+			// 最终调用的是AbstractApplicationContext的refresh方法
 			refreshContext(context);
+			// ApplicationContext后置处理
 			afterRefresh(context, applicationArguments);
 
 			stopWatch.stop();
@@ -360,6 +364,7 @@ public class SpringApplication {
 		ConfigurableEnvironment environment = getOrCreateEnvironment();
 		configureEnvironment(environment, applicationArguments.getSourceArgs());
 		ConfigurationPropertySources.attach(environment);
+		// 发送ApplicationEnvironmentPreparedEvent事件
 		listeners.environmentPrepared(environment);
 		bindToSpringApplication(environment);
 		if (!this.isCustomEnvironment) {
@@ -383,9 +388,12 @@ public class SpringApplication {
 
 	private void prepareContext(ConfigurableApplicationContext context, ConfigurableEnvironment environment,
 			SpringApplicationRunListeners listeners, ApplicationArguments applicationArguments, Banner printedBanner) {
+		// 初始化context
 		context.setEnvironment(environment);
 		postProcessApplicationContext(context);
+		// 调用初始化器的initialize方法
 		applyInitializers(context);
+		// 发送ApplicationContextInitializedEvent
 		listeners.contextPrepared(context);
 		if (this.logStartupInfo) {
 			logStartupInfo(context.getParent() == null);
@@ -408,6 +416,7 @@ public class SpringApplication {
 		Set<Object> sources = getAllSources();
 		Assert.notEmpty(sources, "Sources must not be empty");
 		load(context, sources.toArray(new Object[0]));
+		// 发送ApplicationPreparedEvent
 		listeners.contextLoaded(context);
 	}
 

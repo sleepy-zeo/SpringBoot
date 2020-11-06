@@ -131,8 +131,24 @@ public class SimpleApplicationEventMulticaster extends AbstractApplicationEventM
 	public void multicastEvent(final ApplicationEvent event, @Nullable ResolvableType eventType) {
 		ResolvableType type = (eventType != null ? eventType : resolveDefaultEventType(event));
 		Executor executor = getTaskExecutor();
+		//
+		//	org.springframework.context.ApplicationListener=\
+		//	org.springframework.boot.ClearCachesApplicationListener,\
+		//	org.springframework.boot.builder.ParentContextCloserApplicationListener,\
+		//	org.springframework.boot.context.FileEncodingApplicationListener,\
+		//	org.springframework.boot.context.config.AnsiOutputApplicationListener,\
+		//	org.springframework.boot.context.config.ConfigFileApplicationListener,\
+		//	org.springframework.boot.context.config.DelegatingApplicationListener,\
+		//	org.springframework.boot.context.logging.ClasspathLoggingApplicationListener,\
+		//	org.springframework.boot.context.logging.LoggingApplicationListener,\
+		//	org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener
+		//
+		//	org.springframework.context.ApplicationListener=\
+		//	org.springframework.boot.autoconfigure.BackgroundPreinitializer
+		//
 		for (ApplicationListener<?> listener : getApplicationListeners(event, type)) {
 			if (executor != null) {
+				// Step 4. 实际是调用了getApplicationListeners中的每一个ApplicationListener来消费event
 				executor.execute(() -> invokeListener(listener, event));
 			}
 			else {

@@ -226,6 +226,7 @@ public class ConfigFileApplicationListener implements EnvironmentPostProcessor, 
 	 */
 	protected void addPropertySources(ConfigurableEnvironment environment, ResourceLoader resourceLoader) {
 		RandomValuePropertySource.addToEnvironment(environment);
+		// 读取application.yml等配置文件
 		new Loader(environment, resourceLoader).load();
 	}
 
