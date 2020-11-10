@@ -30,3 +30,45 @@ spring:
    - classpath:/static/
    - classpath:/public/
 ```
+
+## Spring Boot三个常用注解
+
+```text
+@Controller     展现层，表面被标注的类是控制器
+@Repository     持久层，和数据库进行交互，即DAO
+@Service        业务层，一般都要设计好接口
+
+public interface HumanService {
+    public String name();
+}
+
+@Service("teacherService")
+public class TeacherServiceImpl implements HumanService {
+    @Override
+    public String name() {
+        System.out.println("teacher");
+        return "teacher";
+    }
+}
+ 
+@Service("doctorService")
+public class DoctorServiceImpl implements HumanService {
+    @Override
+    public String name() {
+        System.out.println("doctor");
+        return "doctor";
+    }
+}
+
+@RestController
+public class HumanController {
+    @Autowired
+    @Qualifier("teacherService")
+    private HumanService humanService;
+ 
+    @RequestMapping("/name")
+    public String name(){
+        return humanService.name();
+    }
+}
+```
