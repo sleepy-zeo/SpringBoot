@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -13,6 +14,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+
+import javax.sql.DataSource;
 
 /**
  * EnableWebSecurity
@@ -28,11 +33,27 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
     private Log logger = LogFactory.getLog(WSConfigurerAdapter.class);
 
     private UserDetailsService userDetailsService;
+    private DataSource dataSource;
 
     @Autowired
     @Qualifier(value = "userDetailsServiceImpl")
     public void setUserDetailsService(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
+    }
+
+    @Autowired
+    public void setDataSource(DataSource source) {
+        this.dataSource = source;
+    }
+
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository() {
+        JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+        logger.info("tr hash: "+tokenRepository.hashCode());
+        tokenRepository.setDataSource(dataSource);
+        // 自动在程序第一次启动的时候创建persistent_logins表
+        // tokenRepository.setCreateTableOnStartup(true);
+        return tokenRepository;
     }
 
     // 配置密码相关
@@ -76,7 +97,14 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
                 .defaultSuccessUrl("/welcome").permitAll()
                 .and()
                 // 配置logout
-                .logout().permitAll();
+                .logout().permitAll()
+                .and()
+                // 配置自动登陆
+                .rememberMe()
+                .tokenRepository(persistentTokenRepository())
+                .tokenValiditySeconds(600) // s
+                .userDetailsService(userDetailsService);
+        ;
 
         // 关闭CSRF跨域
         http.csrf().disable();
