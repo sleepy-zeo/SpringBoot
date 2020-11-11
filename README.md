@@ -36,5 +36,5 @@ spring:
 ```text
 @Controller     展现层，表面被标注的类是控制器
 @Repository     持久层，和数据库进行交互，即DAO
-@Service        业务层，需要设计好接口，一般只和DAO交互
+@Service        业务层，需要设计好接口，一般用于和DAO进行交互
 ```
