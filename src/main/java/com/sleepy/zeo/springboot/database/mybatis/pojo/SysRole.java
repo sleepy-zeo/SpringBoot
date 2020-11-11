@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class SysRole {
 
-    private int roleId;
-    private String rolename;
+    public int roleId;
+    public String rolename;
 }
