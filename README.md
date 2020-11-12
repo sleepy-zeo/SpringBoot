@@ -86,8 +86,8 @@ public String src(@PathVariable("dir") String dir, HttpServletRequest request) {
 这样通过/static/xxx/xx.png也可以访问到资源
 
 3. 配置好忽略
-    web.ignoring()
-        .antMatchers("/static/**")
-        .antMatchers("/favicon.ico")
-        .antMatchers("/drawable/**");
+web.ignoring()
+    .antMatchers("/static/**")
+    .antMatchers("/favicon.ico")
+    .antMatchers("/drawable/**");
 ```

@@ -49,7 +49,7 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
     @Bean
     public PersistentTokenRepository persistentTokenRepository() {
         JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
-        logger.info("tr hash: "+tokenRepository.hashCode());
+        logger.info("==> tr hash: " + tokenRepository.hashCode());
         tokenRepository.setDataSource(dataSource);
         // 自动在程序第一次启动的时候创建persistent_logins表
         // tokenRepository.setCreateTableOnStartup(true);
@@ -93,7 +93,7 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
                 .antMatchers("/").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                // 配置login和login成功跳转页
+                // 配置login和login成功后默认的跳转页
                 .formLogin()
                 .defaultSuccessUrl("/welcome").permitAll()
                 .and()
@@ -102,8 +102,10 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
                 .and()
                 // 配置自动登陆
                 .rememberMe()
+                .rememberMeCookieName("sb-token")
                 .tokenRepository(persistentTokenRepository())
-                .tokenValiditySeconds(600) // s
+                // 单位为s，从login rememberMe开始计算，refresh不影响rememberMe的token，只影响cookie的有效期
+                .tokenValiditySeconds(60)
                 .userDetailsService(userDetailsService);
 
         // 关闭CSRF跨域

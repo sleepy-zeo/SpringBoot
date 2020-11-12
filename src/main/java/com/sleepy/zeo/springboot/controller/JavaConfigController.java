@@ -12,14 +12,12 @@ import java.io.IOException;
 @RequestMapping("/jc")
 public class JavaConfigController {
 
-    private CBConfig.SleepyBean sleepyBean;
+    /**
+     * 容器不会提前创建Bean的实例，只有在需要注入的时候(比如这里需要注入)，容器才会去创建Bean的实例
+     */
     private CBConfig.ClientBean1 clientBean1;
     private CBConfig.ClientBean2 clientBean2;
-
-    @Autowired
-    public void setSleepyBean(CBConfig.SleepyBean sleepyBean) {
-        this.sleepyBean = sleepyBean;
-    }
+    private CBConfig.ClientBean3 clientBean3;
 
     @Autowired
     public void setClientBean1(CBConfig.ClientBean1 clientBean1) {
@@ -31,8 +29,13 @@ public class JavaConfigController {
         this.clientBean2 = clientBean2;
     }
 
+    @Autowired
+    public void setClientBean3(CBConfig.ClientBean3 clientBean3) {
+        this.clientBean3 = clientBean3;
+    }
+
     @RequestMapping("")
     public void javaConfig(HttpServletResponse response) throws IOException {
-        response.getWriter().write(sleepyBean + "## " + clientBean1 + "## " + clientBean2);
+        response.getWriter().write(clientBean1 + "## " + clientBean2 + "## " + clientBean3);
     }
 }
