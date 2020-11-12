@@ -22,7 +22,7 @@ public class LoginController {
         return "login";
     }
 
-    @RequestMapping(value = "/error", method = RequestMethod.GET)
+    @RequestMapping(value = "/error", method = {RequestMethod.GET, RequestMethod.POST})
     public void error(HttpServletRequest request, HttpServletResponse response) {
         AuthenticationException exception = (AuthenticationException) request.getSession().getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
         try {

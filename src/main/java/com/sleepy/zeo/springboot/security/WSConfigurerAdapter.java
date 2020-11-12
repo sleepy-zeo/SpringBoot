@@ -1,11 +1,14 @@
 package com.sleepy.zeo.springboot.security;
 
+import com.sleepy.zeo.springboot.servlet.VerifyFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationDetailsSource;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,9 +17,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 
 /**
@@ -34,11 +40,31 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
 
     private UserDetailsService userDetailsService;
     private DataSource dataSource;
+    private VerifyFilter verifyFilter;
+    private AuthenticationDetailsSource<HttpServletRequest, HttpServletResponse> detailsSource;
+    private AuthenticationProvider authenticationProvider;
 
     @Autowired
     @Qualifier(value = "userDetailsServiceImpl")
     public void setUserDetailsService(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
+    }
+
+    @Autowired
+    @Qualifier("verifyFilterCnt")
+    public void setVerifyFilter(VerifyFilter verifyFilter) {
+        this.verifyFilter = verifyFilter;
+    }
+
+    @Autowired
+    @Qualifier("wAuthenticationDetailsSource")
+    public void setDetailsSource(AuthenticationDetailsSource detailsSource) {
+        this.detailsSource = detailsSource;
+    }
+
+    @Autowired
+    public void setAuthenticationProvider(AuthenticationProvider authenticationProvider) {
+        this.authenticationProvider = authenticationProvider;
     }
 
     @Autowired
@@ -73,6 +99,7 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
                         return s.equals(charSequence.toString());
                     }
                 });
+        auth.authenticationProvider(authenticationProvider);
     }
 
     // 配置针对全局的忽略规则
@@ -91,6 +118,7 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 // 允许某些匿名url，然后对于其它任何request都需要登陆认证
                 .antMatchers("/").permitAll()
+                .antMatchers("/verifycode").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 // 配置login和login成功和失败默认的跳转页
@@ -99,6 +127,7 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
                 .loginPage("/login")
                 .defaultSuccessUrl("/welcome").permitAll()
                 .failureUrl("/login/error")
+                .authenticationDetailsSource(detailsSource)
                 .and()
                 // 配置logout
                 .logout().permitAll()
@@ -107,9 +136,11 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
                 .rememberMe()
                 .rememberMeCookieName("sb-token")
                 .tokenRepository(persistentTokenRepository())
-                // 单位为s，从login rememberMe开始计算，refresh不影响rememberMe的token，只影响cookie的有效期
-                .tokenValiditySeconds(60)
-                .userDetailsService(userDetailsService);
+                .tokenValiditySeconds(60) // 单位为s，从login rememberMe开始计算，refresh不影响rememberMe的token，只影响cookie的有效期
+                .userDetailsService(userDetailsService)
+                .and()
+                // 配置filter的顺序
+                .addFilterBefore(verifyFilter, UsernamePasswordAuthenticationFilter.class);
 
         // 关闭CSRF跨域
         http.csrf().disable();

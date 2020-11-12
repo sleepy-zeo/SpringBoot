@@ -22,4 +22,6 @@ public class Constants {
     public static final int HTTP_CODE_REQUESTED_RANGE_NOT_SATISFIABLE = SC_REQUESTED_RANGE_NOT_SATISFIABLE;
     public static final int HTTP_CODE_NOT_FOUND = SC_NOT_FOUND;
 
+    public static final boolean ENABLE_VERIFY_FILTER = false;
+
 }
