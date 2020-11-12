@@ -190,6 +190,18 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 	 * returned <tt>Authentication</tt> object is not null.
 	 * </ol>
 	 */
+	//
+	// 专门处理Spring Security的AuthenticationException异常
+	//
+	// AuthenticationException异常包括
+	// 		UsernameNotFoundException
+	// 		LockedException
+	// 		AccountExpiredException
+	//		DisabledException
+	//		...
+	//
+	// 在doFilter中捕捉了AuthenticationException异常，然后进行相应的处理
+	//
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 			throws IOException, ServletException {
 
@@ -226,7 +238,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 			return;
 		}
 		catch (AuthenticationException failed) {
-			// Authentication failed
+			// Step 1. 认证失败，交给unsuccessfulAuthentication处理
 			unsuccessfulAuthentication(request, response, failed);
 
 			return;
@@ -349,6 +361,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 
 		rememberMeServices.loginFail(request, response);
 
+		// Step 2. 直接转交给了SimpleUrlAuthenticationFailureHandler的onAuthenticationFailure函数
 		failureHandler.onAuthenticationFailure(request, response, failed);
 	}
 
