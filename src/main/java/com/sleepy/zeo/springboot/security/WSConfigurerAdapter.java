@@ -93,9 +93,12 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
                 .antMatchers("/").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                // 配置login和login成功后默认的跳转页
+                // 配置login和login成功和失败默认的跳转页
+                // TODO: 这里如果不配置loginPage，那么即使配置failureUrl也不会跳转到自定义的Controller
                 .formLogin()
+                .loginPage("/login")
                 .defaultSuccessUrl("/welcome").permitAll()
+                .failureUrl("/login/error")
                 .and()
                 // 配置logout
                 .logout().permitAll()
