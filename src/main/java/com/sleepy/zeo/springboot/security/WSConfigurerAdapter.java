@@ -80,6 +80,7 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         // 设置忽略拦截的文件夹和文件，常用于放行静态的资源文件
         web.ignoring()
+                .antMatchers("/static/**")
                 .antMatchers("/favicon.ico")
                 .antMatchers("/drawable/**");
     }
@@ -104,7 +105,6 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
                 .tokenRepository(persistentTokenRepository())
                 .tokenValiditySeconds(600) // s
                 .userDetailsService(userDetailsService);
-        ;
 
         // 关闭CSRF跨域
         http.csrf().disable();

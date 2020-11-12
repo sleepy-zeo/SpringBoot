@@ -1,12 +1,19 @@
 server:
  port: 7077
-
+ servlet:
+  session:
+   cookie:
+    # -1  浏览器关闭后立即将cookie清除
+    # 0   立即将cookie清除
+    # x   x秒后将cookie清除
+    max-age: -1
 spring:
  resources:
   # 资源路径，可以通过http://xxx:xxxx/xxx.png直接访问资源
   static-locations:
-   - classpath:/static/
+   - classpath:/static
  # 配置String到View的映射
+ # prefix和suffix表示将xxx.html放在/templates/文件夹下，当Controller返回xxx时thymeleaf就可以自动渲染
  thymeleaf:
   prefix: classpath:/templates/
   suffix: .html

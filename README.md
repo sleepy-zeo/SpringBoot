@@ -61,3 +61,33 @@ antMatchers主要是用来匹配常见的url
 ```text
 匹配复杂的url，可以使用regexMatchers，该函数使用正则匹配
 ```
+
+## spring.resources.static-locations
+
+```text
+1. spring.resources.static-locations要设置成/static，这样访问/static/favicon.ico等只需要http://xxx/favicon.ico即可
+
+2. 但是为了html文件中可以通过/static/xxx/xx.png访问到资源，需要配置
+@RequestMapping("/static/{dir}/**")
+public String src(@PathVariable("dir") String dir, HttpServletRequest request) {
+    // 获取请求的全路径: /static/drawable/background.png
+    String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+    logger.info("path: " + path);
+
+    // 获取匹配到controller的路径: /static/{dir}/**
+    String bestMatchPattern = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+    logger.info("bestMatchPattern: " + bestMatchPattern);
+
+    // 获取dir的值: drawable
+    logger.info("suffix: " + dir);
+
+    return "forward:/" + path.substring(8);
+}
+这样通过/static/xxx/xx.png也可以访问到资源
+
+3. 配置好忽略
+    web.ignoring()
+        .antMatchers("/static/**")
+        .antMatchers("/favicon.ico")
+        .antMatchers("/drawable/**");
+```
