@@ -44,6 +44,23 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
     private AuthenticationDetailsSource<HttpServletRequest, HttpServletResponse> detailsSource;
     private AuthenticationProvider authenticationProvider;
 
+    @Bean
+    public PasswordEncoder defaultPasswordEncoder() {
+        return new PasswordEncoder() {
+            @Override
+            public String encode(CharSequence charSequence) {
+                logger.info("encode: " + charSequence);
+                return charSequence.toString();
+            }
+
+            @Override
+            public boolean matches(CharSequence charSequence, String s) {
+                logger.info("matches: " + charSequence + "--" + s);
+                return s.equals(charSequence.toString());
+            }
+        };
+    }
+
     @Autowired
     @Qualifier(value = "userDetailsServiceImpl")
     public void setUserDetailsService(UserDetailsService userDetailsService) {
@@ -86,19 +103,7 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService)
-                .passwordEncoder(new PasswordEncoder() {
-                    @Override
-                    public String encode(CharSequence charSequence) {
-                        logger.info("encode: " + charSequence);
-                        return charSequence.toString();
-                    }
-
-                    @Override
-                    public boolean matches(CharSequence charSequence, String s) {
-                        logger.info("matches: " + charSequence + "--" + s);
-                        return s.equals(charSequence.toString());
-                    }
-                });
+                .passwordEncoder(defaultPasswordEncoder());
         auth.authenticationProvider(authenticationProvider);
     }
 

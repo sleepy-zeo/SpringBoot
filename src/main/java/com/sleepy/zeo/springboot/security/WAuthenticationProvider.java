@@ -5,13 +5,13 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -23,12 +23,21 @@ import javax.servlet.http.HttpServletRequest;
 public class WAuthenticationProvider implements AuthenticationProvider {
     private static final Log logger = LogFactory.getLog(WAuthenticationProvider.class);
 
-    private UserDetailsService userDetailsService;
+    private DaoAuthenticationProvider defaultProvider;
+
+    public WAuthenticationProvider() {
+        defaultProvider = new DaoAuthenticationProvider();
+    }
 
     @Autowired
     @Qualifier("userDetailsServiceImpl")
     public void setUserDetailsService(UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
+        defaultProvider.setUserDetailsService(userDetailsService);
+    }
+
+    @Autowired
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        defaultProvider.setPasswordEncoder(passwordEncoder);
     }
 
     @Override
@@ -40,18 +49,12 @@ public class WAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         WAuthenticationDetails authenticationDetails = (WAuthenticationDetails) authentication.getDetails();
 
-        String username = authentication.getName();
-        String password = authentication.getCredentials().toString();
         String verifyCode = authenticationDetails.getVerifyCode();
         if (!verifyCodeValid(verifyCode)) {
             throw new DisabledException("verifycode error");
         }
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        if (!userDetails.getPassword().equals(password)) {
-            throw new BadCredentialsException("password error");
-        }
 
-        return new UsernamePasswordAuthenticationToken(username, password, userDetails.getAuthorities());
+        return defaultProvider.authenticate(authentication);
     }
 
     @SuppressWarnings("Duplicates")

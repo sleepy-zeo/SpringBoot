@@ -91,16 +91,3 @@ web.ignoring()
     .antMatchers("/favicon.ico")
     .antMatchers("/drawable/**");
 ```
-
-> task
-
-```
-UserDetailsService
-
-AuthenticationDetails
-
-AuthenticationDetailsSource
-
-AuthenticationProvider
-
-```
