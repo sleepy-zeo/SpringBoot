@@ -130,10 +130,11 @@ public abstract class AbstractUserDetailsAuthenticationProvider implements
 						"AbstractUserDetailsAuthenticationProvider.onlySupports",
 						"Only UsernamePasswordAuthenticationToken is supported"));
 
-		// Determine username
+		// Step 8. authenticate的实现地方
 		String username = (authentication.getPrincipal() == null) ? "NONE_PROVIDED"
 				: authentication.getName();
 
+		// 看看缓存中是否保存username对应的userDetails
 		boolean cacheWasUsed = true;
 		UserDetails user = this.userCache.getUserFromCache(username);
 
@@ -141,6 +142,7 @@ public abstract class AbstractUserDetailsAuthenticationProvider implements
 			cacheWasUsed = false;
 
 			try {
+				// 缓存中不存在该username对应的userDetails信息，调用DaoAuthenticationProvider构建userDetails
 				user = retrieveUser(username,
 						(UsernamePasswordAuthenticationToken) authentication);
 			}
@@ -161,15 +163,17 @@ public abstract class AbstractUserDetailsAuthenticationProvider implements
 					"retrieveUser returned null - a violation of the interface contract");
 		}
 
+		// Step 10. 开始真正的认证工作
 		try {
+			// 预检查，主要是查看user是否被锁定 被禁用 账号是否过期等
 			preAuthenticationChecks.check(user);
+			// 额外检查，检查input密码是否为空，密码是否正确匹配
 			additionalAuthenticationChecks(user,
 					(UsernamePasswordAuthenticationToken) authentication);
 		}
 		catch (AuthenticationException exception) {
 			if (cacheWasUsed) {
-				// There was a problem, so try again after checking
-				// we're using latest data (i.e. not from the cache)
+				// 认证出错，cacheWasUsed表明是缓存信息，重新读取最新的信息认证
 				cacheWasUsed = false;
 				user = retrieveUser(username,
 						(UsernamePasswordAuthenticationToken) authentication);
@@ -182,6 +186,7 @@ public abstract class AbstractUserDetailsAuthenticationProvider implements
 			}
 		}
 
+		// 后置检查，检查用户认证信息是否过期
 		postAuthenticationChecks.check(user);
 
 		if (!cacheWasUsed) {
@@ -194,6 +199,7 @@ public abstract class AbstractUserDetailsAuthenticationProvider implements
 			principalToReturn = user.getUsername();
 		}
 
+		// 返回由username password authorities组成的UsernamePasswordAuthenticationToken
 		return createSuccessAuthentication(principalToReturn, authentication, user);
 	}
 

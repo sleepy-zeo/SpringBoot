@@ -71,7 +71,7 @@ public class SimpleUrlAuthenticationFailureHandler implements
 	public void onAuthenticationFailure(HttpServletRequest request,
 			HttpServletResponse response, AuthenticationException exception)
 			throws IOException, ServletException {
-		// Step 3. AuthenticationException异常处理最终在这里进行处理
+		// @AuthenticationException Step 3. AuthenticationException异常处理最终在这里进行处理
 
 		if (defaultFailureUrl == null) {
 			logger.debug("No failure URL set, sending 401 Unauthorized error");
@@ -80,7 +80,7 @@ public class SimpleUrlAuthenticationFailureHandler implements
 				HttpStatus.UNAUTHORIZED.getReasonPhrase());
 		}
 		else {
-			// 根据forwardToDestination将exception保存在request中或session中
+			// @AuthenticationException 根据forwardToDestination将exception保存在request中或session中
 			saveException(request, exception);
 
 			if (forwardToDestination) {

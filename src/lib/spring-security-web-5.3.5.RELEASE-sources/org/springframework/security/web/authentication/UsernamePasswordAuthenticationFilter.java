@@ -28,21 +28,23 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Processes an authentication form submission. Called
- * {@code AuthenticationProcessingFilter} prior to Spring Security 3.0.
- * <p>
- * Login forms must present two parameters to this filter: a username and password. The
- * default parameter names to use are contained in the static fields
- * {@link #SPRING_SECURITY_FORM_USERNAME_KEY} and
- * {@link #SPRING_SECURITY_FORM_PASSWORD_KEY}. The parameter names can also be changed by
- * setting the {@code usernameParameter} and {@code passwordParameter} properties.
- * <p>
- * This filter by default responds to the URL {@code /login}.
+ * Spring Security采用的是filterChain的设计模式，主要的功能都是由过滤器实现，过滤器的核心方法是doFilter
  *
- * @author Ben Alex
- * @author Colin Sampaleanu
- * @author Luke Taylor
- * @since 3.0
+ * Spring Security默认的过滤器:
+ * 		org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@57cb70be,
+ * 		org.springframework.security.web.context.SecurityContextPersistenceFilter@507d64aa,
+ * 		org.springframework.security.web.header.HeaderWriterFilter@80bfa9d,
+ * 		org.springframework.security.web.authentication.logout.LogoutFilter@33ecbd6c,
+ * 		org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter@2abe9173,
+ * 		org.springframework.security.web.savedrequest.RequestCacheAwareFilter@60b34931,
+ * 		org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@3e67f5f2,
+ * 		org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter@43f9dd56,
+ * 		org.springframework.security.web.authentication.AnonymousAuthenticationFilter@2d4608a6,
+ * 		org.springframework.security.web.session.SessionManagementFilter@4b039c6d,
+ * 		org.springframework.security.web.access.ExceptionTranslationFilter@53abfc07,
+ * 		org.springframework.security.web.access.intercept.FilterSecurityInterceptor@32177fa5
+ *
+ * 比较重要的是UsernamePasswordAuthenticationFilter，该过滤器专门用来处理username+password登陆相关
  */
 public class UsernamePasswordAuthenticationFilter extends
 		AbstractAuthenticationProcessingFilter {
@@ -86,13 +88,22 @@ public class UsernamePasswordAuthenticationFilter extends
 
 		username = username.trim();
 
-		UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(
+		// Step 3. 根据username和password构造authToken
+		// authToken.principal = username
+		// authToken.credential = password
+		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
 				username, password);
 
-		// Allow subclasses to set the "details" property
-		setDetails(request, authRequest);
+		// Step 4. 将request整合成details后，authToken.details = details
+		// 具体步骤是:
+		//		1. AuthenticationDetailsSource调用WebAuthenticationDetails的构造函数构造出details
+		//		2. AuthenticationDetailsSource提供buildDetails返回该details
+		//		3. setDetails将details赋值给authToken的details属性
+		setDetails(request, authToken);
 
-		return this.getAuthenticationManager().authenticate(authRequest);
+		// Step 5. 通过AuthenticationManager来认证authenToken
+		// AuthenticationManager是一个接口，具体的实现类是ProviderManager
+		return this.getAuthenticationManager().authenticate(authToken);
 	}
 
 	/**

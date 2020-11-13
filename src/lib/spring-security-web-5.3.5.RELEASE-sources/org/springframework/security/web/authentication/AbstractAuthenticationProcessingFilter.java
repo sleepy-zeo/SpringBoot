@@ -218,9 +218,13 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 			logger.debug("Request is to process authentication");
 		}
 
+		// Step 1. 认证从UsernamePasswordAuthenticationFilter的doFilter()开始，真正的
+		// 实现在其父抽象类AbstractAuthenticationProcessingFilter中
 		Authentication authResult;
 
 		try {
+			// Step 2. 调用attemptAuthentication开始认证工作，具体的认证工作才交给了子类UsernamePasswordAuthenticationFilter
+			// 这里表明最终返回了非空的authResult就表明认证成功
 			authResult = attemptAuthentication(request, response);
 			if (authResult == null) {
 				// return immediately as subclass has indicated that it hasn't completed
@@ -238,7 +242,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 			return;
 		}
 		catch (AuthenticationException failed) {
-			// Step 1. 认证失败，交给unsuccessfulAuthentication处理
+			// @AuthenticationException Step 1. 认证失败，交给unsuccessfulAuthentication处理
 			unsuccessfulAuthentication(request, response, failed);
 
 			return;
@@ -246,6 +250,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 
 		// Authentication success
 		if (continueChainBeforeSuccessfulAuthentication) {
+			// 执行下一个filter的doFilter
 			chain.doFilter(request, response);
 		}
 
@@ -361,7 +366,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 
 		rememberMeServices.loginFail(request, response);
 
-		// Step 2. 直接转交给了SimpleUrlAuthenticationFailureHandler的onAuthenticationFailure函数
+		// @AuthenticationException Step 2. 直接转交给了SimpleUrlAuthenticationFailureHandler的onAuthenticationFailure函数
 		failureHandler.onAuthenticationFailure(request, response, failed);
 	}
 

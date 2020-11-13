@@ -185,6 +185,7 @@ public class ProviderManager implements AuthenticationManager, MessageSourceAwar
 		Authentication parentResult = null;
 		boolean debug = logger.isDebugEnabled();
 
+		// Step 6. 遍历所有的AuthenticationProvider，找到执行Authentication的provider
 		for (AuthenticationProvider provider : getProviders()) {
 			if (!provider.supports(toTest)) {
 				continue;
@@ -196,6 +197,9 @@ public class ProviderManager implements AuthenticationManager, MessageSourceAwar
 			}
 
 			try {
+				// Step 7. 最终由DaoAuthenticationProvider来进行认证工作，
+				// authentication由父类AbstractUserDetailsAuthenticationProvider实现
+				// DaoAuthenticationProvider <- AbstractUserDetailsAuthenticationProvider <- AuthenticationProvider
 				result = provider.authenticate(authentication);
 
 				if (result != null) {
