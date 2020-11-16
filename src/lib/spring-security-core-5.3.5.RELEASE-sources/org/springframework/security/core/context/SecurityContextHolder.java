@@ -47,6 +47,18 @@ import java.lang.reflect.Constructor;
  * @author Ben Alex
  *
  */
+
+/**
+ * 本次请求:
+ * 一个request从开始到结束都由一个线程处理，这个线程中途也不会去处理其他的request，所以在这段时间内，
+ * 这个线程跟当前request是一一对应的，也就是当前线程和request对应的用户是一一对应的，每次request完毕
+ * 都会利用SecurityContextHolder将SecurityContext存储在当前线程中
+ *
+ * 下次请求:
+ * Sevlet中线程是被池化复用的，一旦处理完当前的请求，它可能马上就会被分配去处理其他的请求，所以每次请求
+ * 都会把SecurityContext存储在session中(authentication改变或者session中不存在SecurityContext的时候才会真正存储)，
+ * 当下一次request到来时，利用SecurityContextPersistenceFilter提前从session中取出SecurityContext
+ */
 public class SecurityContextHolder {
 	// ~ Static fields/initializers
 	// =====================================================================================

@@ -30,31 +30,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.GenericFilterBean;
 
 /**
- * Populates the {@link SecurityContextHolder} with information obtained from the
- * configured {@link SecurityContextRepository} prior to the request and stores it back in
- * the repository once the request has completed and clearing the context holder. By
- * default it uses an {@link HttpSessionSecurityContextRepository}. See this class for
- * information <tt>HttpSession</tt> related configuration options.
- * <p>
- * This filter will only execute once per request, to resolve servlet container
- * (specifically Weblogic) incompatibilities.
- * <p>
- * This filter MUST be executed BEFORE any authentication processing mechanisms.
- * Authentication processing mechanisms (e.g. BASIC, CAS processing filters etc) expect
- * the <code>SecurityContextHolder</code> to contain a valid <code>SecurityContext</code>
- * by the time they execute.
- * <p>
- * This is essentially a refactoring of the old
- * <tt>HttpSessionContextIntegrationFilter</tt> to delegate the storage issues to a
- * separate strategy, allowing for more customization in the way the security context is
- * maintained between requests.
- * <p>
- * The <tt>forceEagerSessionCreation</tt> property can be used to ensure that a session is
- * always available before the filter chain executes (the default is <code>false</code>,
- * as this is resource intensive and not recommended).
- *
- * @author Luke Taylor
- * @since 3.0
+ * filterChain的第一个拦截器，request来临时负责将SecurityContext从HttpSession中取出来
  */
 public class SecurityContextPersistenceFilter extends GenericFilterBean {
 
@@ -97,6 +73,8 @@ public class SecurityContextPersistenceFilter extends GenericFilterBean {
 
 		HttpRequestResponseHolder holder = new HttpRequestResponseHolder(request,
 				response);
+		// @SecurityContext_load SpringSecurity的第一个filter会首先将SecurityContext绑定到当前线程中
+		// 具体就是从HttpSession中获取SecurityContext，然后通过ThreadLocal将其绑定至线程
 		SecurityContext contextBeforeChainExecution = repo.loadContext(holder);
 
 		try {
@@ -111,6 +89,7 @@ public class SecurityContextPersistenceFilter extends GenericFilterBean {
 			// Crucial removal of SecurityContextHolder contents - do this before anything
 			// else.
 			SecurityContextHolder.clearContext();
+			// @SecurityContext_save Step 1. 每次request都会将SecurityContext存储在session中
 			repo.saveContext(contextAfterChainExecution, holder.getRequest(),
 					holder.getResponse());
 			request.removeAttribute(FILTER_APPLIED);

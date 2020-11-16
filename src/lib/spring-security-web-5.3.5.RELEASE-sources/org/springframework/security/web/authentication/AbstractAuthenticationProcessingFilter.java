@@ -330,6 +330,7 @@ public abstract class AbstractAuthenticationProcessingFilter extends GenericFilt
 					+ authResult);
 		}
 
+		// 将认证成功的结果存储在SecurityContext中，所以的filter走完后会将SecurityContext保存至session
 		SecurityContextHolder.getContext().setAuthentication(authResult);
 
 		rememberMeServices.loginSuccess(request, response, authResult);

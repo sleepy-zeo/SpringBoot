@@ -146,7 +146,9 @@ public class HttpSessionSecurityContextRepository implements SecurityContextRepo
 		// if something in the chain called sendError() or sendRedirect(). This ensures we
 		// only call it
 		// once per request.
+		// 保证每次请求只调用一次
 		if (!responseWrapper.isContextSaved()) {
+			// @SecurityContext_save Step 2. 调用responseWrapper保存context
 			responseWrapper.saveContext(context);
 		}
 	}
@@ -368,6 +370,8 @@ public class HttpSessionSecurityContextRepository implements SecurityContextRepo
 			if (httpSession != null) {
 				// We may have a new session, so check also whether the context attribute
 				// is set SEC-1561
+				// @SecurityContext_save Step 3. 最终调用HttpSession保存SecurityContext，
+				// 保存的条件是context改变了或者httpSession中不存在SecurityContext
 				if (contextChanged(context)
 						|| httpSession.getAttribute(springSecurityContextKey) == null) {
 					httpSession.setAttribute(springSecurityContextKey, context);

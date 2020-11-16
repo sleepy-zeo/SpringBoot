@@ -21,14 +21,8 @@ import org.springframework.security.core.Authentication;
 import java.io.Serializable;
 
 /**
- * Interface defining the minimum security information associated with the current thread
- * of execution.
- *
- * <p>
- * The security context is stored in a {@link SecurityContextHolder}.
- * </p>
- *
- * @author Ben Alex
+ * SecurityContext
+ * 		存储认证成功后的相关信息
  */
 public interface SecurityContext extends Serializable {
 	// ~ Methods
