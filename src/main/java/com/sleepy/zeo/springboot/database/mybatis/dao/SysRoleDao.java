@@ -17,4 +17,8 @@ public interface SysRoleDao {
     )
     @Select({"select * from sys_role where id = #{id}"})
     SysRole fetchRole(@Param("id") int id);
+
+    @ResultMap(value = "role")
+    @Select({"select * from sys_role where name = #{roleName}"})
+    SysRole fetchRole2(@Param("roleName") String roleName);
 }

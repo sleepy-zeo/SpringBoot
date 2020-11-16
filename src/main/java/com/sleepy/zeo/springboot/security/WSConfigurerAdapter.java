@@ -1,5 +1,6 @@
 package com.sleepy.zeo.springboot.security;
 
+import com.sleepy.zeo.springboot.security.evaluator.WPermissionEvaluator;
 import com.sleepy.zeo.springboot.servlet.VerifyFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,6 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
@@ -43,6 +45,7 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
     private VerifyFilter verifyFilter;
     private AuthenticationDetailsSource<HttpServletRequest, HttpServletResponse> detailsSource;
     private AuthenticationProvider authenticationProvider;
+    private WPermissionEvaluator permissionEvaluator;
 
     @Bean
     public PasswordEncoder defaultPasswordEncoder() {
@@ -99,6 +102,18 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
         return tokenRepository;
     }
 
+    @Autowired
+    public void setPermissionEvaluator(WPermissionEvaluator permissionEvaluator) {
+        this.permissionEvaluator = permissionEvaluator;
+    }
+
+    @Bean
+    public DefaultWebSecurityExpressionHandler webSecurityExpressionHandler() {
+        DefaultWebSecurityExpressionHandler handler = new DefaultWebSecurityExpressionHandler();
+        handler.setPermissionEvaluator(permissionEvaluator);
+        return handler;
+    }
+
     // 配置密码相关
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -129,8 +144,8 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
                 // 配置login和login成功和失败默认的跳转页
                 // TODO: 这里如果不配置loginPage，那么即使配置failureUrl也不会跳转到自定义的Controller
                 .formLogin()
-                .loginPage("/login")
-                .defaultSuccessUrl("/welcome").permitAll()
+                .loginPage("/login").permitAll()
+                .defaultSuccessUrl("/welcome")
                 .failureUrl("/login/error")
                 .authenticationDetailsSource(detailsSource)
                 .and()

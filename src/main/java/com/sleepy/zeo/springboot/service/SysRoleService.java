@@ -5,4 +5,6 @@ import com.sleepy.zeo.springboot.database.mybatis.pojo.SysRole;
 public interface SysRoleService {
 
     SysRole fetchRole(int id);
+
+    SysRole fetchRole2(String roleName);
 }

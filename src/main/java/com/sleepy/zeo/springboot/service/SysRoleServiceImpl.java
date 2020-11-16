@@ -18,4 +18,9 @@ public class SysRoleServiceImpl implements SysRoleService {
     public SysRole fetchRole(int id) {
         return sysRoleDao.fetchRole(id);
     }
+
+    @Override
+    public SysRole fetchRole2(String roleName) {
+        return sysRoleDao.fetchRole2(roleName);
+    }
 }

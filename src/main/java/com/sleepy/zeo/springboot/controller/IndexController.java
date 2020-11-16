@@ -45,6 +45,20 @@ public class IndexController {
         return "You have role ROLE_ADMIN";
     }
 
+    @RequestMapping("/admin/r")
+    @ResponseBody
+    @PreAuthorize("hasPermission('/admin','r')")
+    public String printAdminR() {
+        return "You have role ROLE_ADMIN R";
+    }
+
+    @RequestMapping("/admin/c")
+    @ResponseBody
+    @PreAuthorize("hasPermission('/admin','c')")
+    public String printAdminC() {
+        return "You have role ROLE_ADMIN C";
+    }
+
     @RequestMapping("/user")
     @ResponseBody
     @PreAuthorize("hasRole('ROLE_USER')")
