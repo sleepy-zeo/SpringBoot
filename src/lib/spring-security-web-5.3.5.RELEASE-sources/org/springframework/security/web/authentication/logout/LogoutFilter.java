@@ -106,6 +106,10 @@ public class LogoutFilter extends GenericFilterBean {
 						+ "' and transferring to logout destination");
 			}
 
+			// 清除Cookie -> CookieClearingLogoutHandler
+			// 清除当前用户的remember-me记录 -> PersistentTokenBasedRememberMeServices
+			// 使当前session失效 -> SecurityContextLogoutHandler
+			// 清空当前的SecurityContext -> SecurityContextLogoutHandler
 			this.handler.logout(request, response, auth);
 
 			logoutSuccessHandler.onLogoutSuccess(request, response, auth);
