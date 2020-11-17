@@ -29,7 +29,7 @@ public class VerifyServlet extends HttpServlet {
     private int interLine = 16;
     private int codeX;
     private int codeY;
-    private static final char[] codeSequence = {'0', '1'};
+    private static final char[] codeSequence = {'1'};
 
     @Override
     public void init() throws ServletException {

@@ -183,6 +183,7 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
                 .antMatchers("/").permitAll()
                 .antMatchers("/verifycode").permitAll()
                 .antMatchers("/session/kick").permitAll()
+                .antMatchers("/cookie/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 // 配置login和login成功和失败默认的跳转页
@@ -218,7 +219,7 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
                 // 配置session
                 .sessionManagement()
                 .invalidSessionStrategy(invalidSessionStrategy)
-                .maximumSessions(100)
+                .maximumSessions(1)
                 .maxSessionsPreventsLogin(false)
                 .expiredSessionStrategy(sessionInformationExpiredStrategy)
                 .sessionRegistry(sessionRegistry());

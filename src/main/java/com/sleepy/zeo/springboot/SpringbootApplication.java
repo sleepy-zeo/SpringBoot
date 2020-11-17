@@ -4,6 +4,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 
 /**
  * SpringBootApplication由@SpringBootConfiguration @EnableAutoConfiguration @ComponentScan三个注解组成
@@ -23,6 +24,7 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
  */
 @SpringBootApplication
 @ServletComponentScan
+@EnableRedisHttpSession
 @MapperScan("com.sleepy.zeo.springboot.database.mybatis.dao")
 public class SpringbootApplication {
 
