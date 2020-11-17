@@ -1,6 +1,7 @@
 package com.sleepy.zeo.springboot.security;
 
 import com.sleepy.zeo.springboot.security.evaluator.WPermissionEvaluator;
+import com.sleepy.zeo.springboot.security.logout.WLogoutSuccessHandler;
 import com.sleepy.zeo.springboot.servlet.VerifyFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,12 +17,18 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.security.web.session.InvalidSessionStrategy;
+import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,6 +53,12 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
     private AuthenticationDetailsSource<HttpServletRequest, HttpServletResponse> detailsSource;
     private AuthenticationProvider authenticationProvider;
     private WPermissionEvaluator permissionEvaluator;
+    private AuthenticationSuccessHandler successHandler;
+    private AuthenticationFailureHandler failureHandler;
+    private InvalidSessionStrategy invalidSessionStrategy;
+    private SessionInformationExpiredStrategy sessionInformationExpiredStrategy;
+    private WLogoutSuccessHandler logoutSuccessHandler;
+
 
     @Bean
     public PasswordEncoder defaultPasswordEncoder() {
@@ -68,6 +81,31 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
     @Qualifier(value = "userDetailsServiceImpl")
     public void setUserDetailsService(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
+    }
+
+    @Autowired
+    public void setSuccessHandler(AuthenticationSuccessHandler successHandler) {
+        this.successHandler = successHandler;
+    }
+
+    @Autowired
+    public void setFailureHandler(AuthenticationFailureHandler failureHandler) {
+        this.failureHandler = failureHandler;
+    }
+
+    @Autowired
+    public void setInvalidSessionStrategy(InvalidSessionStrategy invalidSessionStrategy) {
+        this.invalidSessionStrategy = invalidSessionStrategy;
+    }
+
+    @Autowired
+    public void setSessionInformationExpiredStrategy(SessionInformationExpiredStrategy sessionInformationExpiredStrategy) {
+        this.sessionInformationExpiredStrategy = sessionInformationExpiredStrategy;
+    }
+
+    @Autowired
+    public void setLogoutSuccessHandler(WLogoutSuccessHandler logoutSuccessHandler) {
+        this.logoutSuccessHandler = logoutSuccessHandler;
     }
 
     @Autowired
@@ -114,6 +152,11 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
         return handler;
     }
 
+    @Bean
+    public SessionRegistry sessionRegistry(){
+        return new SessionRegistryImpl();
+    }
+
     // 配置密码相关
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -139,18 +182,29 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
                 // 允许某些匿名url，然后对于其它任何request都需要登陆认证
                 .antMatchers("/").permitAll()
                 .antMatchers("/verifycode").permitAll()
+                .antMatchers("/session/kick").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 // 配置login和login成功和失败默认的跳转页
                 // TODO: 这里如果不配置loginPage，那么即使配置failureUrl也不会跳转到自定义的Controller
                 .formLogin()
                 .loginPage("/login").permitAll()
-                .defaultSuccessUrl("/welcome")
-                .failureUrl("/login/error")
+                .successHandler(successHandler)
+                .failureHandler(failureHandler)
+                //.defaultSuccessUrl("/welcome")
+                //.failureUrl("/login/error")
                 .authenticationDetailsSource(detailsSource)
                 .and()
                 // 配置logout
+                // 默认做了以下几件事:
+                //  1. 当前session失效
+                //  2. 清除与当前用户有关的remember-me记录
+                //  3. 清空当前的SecurityContext
+                //  4. 重定向到登录页
                 .logout().permitAll()
+                .deleteCookies("sb-id")
+                .deleteCookies("sb-token")
+                .logoutSuccessHandler(logoutSuccessHandler)
                 .and()
                 // 配置自动登陆
                 .rememberMe()
@@ -160,7 +214,14 @@ public class WSConfigurerAdapter extends WebSecurityConfigurerAdapter {
                 .userDetailsService(userDetailsService)
                 .and()
                 // 配置filter的顺序
-                .addFilterBefore(verifyFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(verifyFilter, UsernamePasswordAuthenticationFilter.class)
+                // 配置session
+                .sessionManagement()
+                .invalidSessionStrategy(invalidSessionStrategy)
+                .maximumSessions(100)
+                .maxSessionsPreventsLogin(false)
+                .expiredSessionStrategy(sessionInformationExpiredStrategy)
+                .sessionRegistry(sessionRegistry());
 
         // 关闭CSRF跨域
         http.csrf().disable();
