@@ -91,3 +91,31 @@ web.ignoring()
     .antMatchers("/favicon.ico")
     .antMatchers("/drawable/**");
 ```
+## cookie
+
+```text
+path: Cookie的使用路径，最后一个字符必须为"/"
+	如果设置为"/sessionWeb/"，则只有contextPath为"/sessionWeb"的程序可以访问该Cookie
+	如果设置为"/"，则本域名下所有的contextPath都可以访问该Cookie
+domain: 可以访问该Cookie的域名，第一个字符必须为"."
+	如果设置为".google.com"，则所有以"google.com"结尾的域名都可以访问该Cookie
+
+
+// 这里设置了sb-id，spring boot会去找到是否存在对应的session，如果不存在就会回调InvalidSessionStrategy
+Cookie cookie = new Cookie("sb-id","NDY2ZWIxNjYtYTJmNy00YmY5LTg4NTctNmQzZjEwOWZlNmFj");
+cookie.setMaxAge(3600);
+cookie.setPath("/");
+response.addCookie(cookie);
+```
+
+## session
+
+```text
+id ---> UUID.randomUUID().toString()
+originalId
+sessionAttrs
+createTime
+lastAccessedTime
+
+sessionId(078b7c7a-bccb-4a86-b69e-38b9f5dfcd38) <-----(base64)-----> cookieValue(MDc4YjdjN2EtYmNjYi00YTg2LWI2OWUtMzhiOWY1ZGZjZDM4)
+```

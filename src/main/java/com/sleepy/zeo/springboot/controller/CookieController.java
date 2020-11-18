@@ -14,11 +14,10 @@ import javax.servlet.http.HttpSession;
 @RequestMapping("/cookie")
 public class CookieController {
 
-
     @RequestMapping("/test")
     @ResponseBody
     public String test(@RequestParam("browser") String browser,
-                         HttpServletRequest request, HttpServletResponse response, HttpSession session) {
+                       HttpServletRequest request, HttpServletResponse response, HttpSession session) {
         Object sessionBrowser = session.getAttribute("browser");
         if (sessionBrowser == null) {
             System.out.println("session not exists, set browser=" + browser);
