@@ -119,3 +119,42 @@ lastAccessedTime
 
 sessionId(078b7c7a-bccb-4a86-b69e-38b9f5dfcd38) <-----(base64)-----> cookieValue(MDc4YjdjN2EtYmNjYi00YTg2LWI2OWUtMzhiOWY1ZGZjZDM4)
 ```
+
+## java extends super ?
+
+```text
+java是单继承，所有继承的类构成一棵树
+
+1. T<? super B>
+?代表容器里的元素类型，该表示规定了元素类型必须是B的父类
+2. T<? extends B>
+?代表容器里的元素类型，该表示规定了元素类型必须是B的子类
+
+// example
+class FX {
+    List<Number> list = new ArrayList<>();
+    public <T extends Number> void add(T t) {
+        list.add(t);
+    }
+}
+
+// example
+class Fx {
+    public AbstractAuthenticationToken(Collection<? extends GrantedAuthority> authorities) {
+        for (GrantedAuthority a : authorities) {
+            if (a == null) {
+                throw new IllegalArgumentException("Authorities collection cannot contain any null elements");
+            }
+        }
+        ArrayList<GrantedAuthority> temp = new ArrayList<>(authorities.size());
+        temp.addAll(authorities);
+        this.authorities = Collections.unmodifiableList(temp);
+    }
+}
+
+// example
+List<Apple> appleList = new ArrayList<>();
+List<Banana> bananaList = new ArrayList<>();
+List<? extends Food> list1 = new ArrayList<>(appleList);
+List<? extends Food> list2 = new ArrayList<>(bananaList);
+```

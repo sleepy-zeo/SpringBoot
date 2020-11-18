@@ -1,4 +1,4 @@
-package com.sleepy.zeo.springboot.java_config;
+package com.sleepy.zeo.springboot.java.javaconfig;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
