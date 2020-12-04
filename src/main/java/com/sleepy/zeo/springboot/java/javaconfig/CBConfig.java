@@ -76,11 +76,16 @@ public class CBConfig {
      *      / public ClientBean2 getClientBean2(ClientBean1 bean) {
      *      /     return new ClientBean2(bean);
      *      / }
-     * 2. 调用Bean注解的方法，，等价于从容器要一个ClientBean的实例
+     * 2. 调用Bean注解的方法，等价于从容器要一个ClientBean的实例
      *      / @Bean
      *      / public ClientBean2 getClientBean2() {
      *      /     return new ClientBean2(getClientBean1());
      *      / }
+     * 2-1. 调用的函数本身没有限制，可以是无@Bean标识的普通函数
+     *      / public void commonFunc() {
+     *      /     System.out.println(getClientBean1());
+     *      / }
+     *
      */
     @Bean
     public ClientBean1 getClientBean1() {
@@ -95,10 +100,10 @@ public class CBConfig {
     }
 
     /**
-     * singleton
+     * singleton(提前创建好唯一的实例，需要的时候直接从IoC中拿)
      *      在整个Spring IoC容器中，使用singleton定义的Bean将只有一个实例
      *
-     * prototype
+     * prototype(每次需要的时候会创建一个新的Bean)
      *      每次通过容器的getBean方法获取prototype定义的Bean时，都将产生一个新的Bean实例
      * 举例:
      *      如果这里三个都设置为prototype，那么当获取ClientBean2的时候，需要注入一个ClientBean1，
