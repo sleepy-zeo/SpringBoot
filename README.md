@@ -1,32 +1,98 @@
 # SpringBoot
 
-## 什么是Spring Boot
+### security builder
 
-- Spring Boot通过pom.xml构建项目
-- Spring Boot的核心就是约定大于配置，即Spring Boot是一个整合很多可插拔的组件的框架，提供了约定好的默认配置，开发者根据需求修改参数配置
+```java
 
-## Spring Boot配置文件
+// SecurityBuilder
+//
+// 提供创建类型O实例的建造器
+public interface SecurityBuilder<O> {
+    O build() throws Exception;
+}
 
-- application.yml是Spring Boot的全局配置文件
-- application.yml存放在resources目录下或resources/config目录下
-- resources/config目录下的application.yml优先级更高
-- 可以通过application-{profile}.properties配置多种环境，然后在application.yml中指定使用的环境:
+// AbstractSecurityBuilder
+//
+// 提供创建类型O实例的建造器，添加了一些方法
+public abstract class AbstractSecurityBuilder<O> implements SecurityBuilder<O> {
 
-```yml
-spring:
- profiles:
-  active: profile
+    private AtomicBoolean building = new AtomicBoolean();
+    private O object;
+
+    public final O build() throws Exception {
+        if (this.building.compareAndSet(false, true)) {
+            this.object = doBuild();
+            return this.object;
+        }
+        throw new AlreadyBuiltException("This object has already been built");
+    }
+
+    protected abstract O doBuild() throws Exception;
+}
+
+// Abstract configured builder
+//
+// 提供创建类型O实例的建造器，添加了更多的方法
+public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBuilder<O>>
+        extends AbstractSecurityBuilder<O> {
+
+    protected final O doBuild() throws Exception {
+        synchronized (configurers) {
+
+            buildState = BuildState.INITIALIZING;
+            beforeInit();
+            init();
+            buildState = BuildState.CONFIGURING;
+            beforeConfigure();
+            configure();
+            buildState = BuildState.BUILDING;
+            O result = performBuild();
+            buildState = BuildState.BUILT;
+            return result;
+        }
+    }
+
+    protected abstract O performBuild() throws Exception;
+
+    private void configure() throws Exception {
+        Collection<SecurityConfigurer<O, B>> configurers = getConfigurers();
+
+        for (SecurityConfigurer<O, B> configurer : configurers) {
+            configurer.configure((B) this);
+        }
+    }
+}
 ```
 
-## Spring Boot默认资源目录
 
-Spring Boot的默认静态资源文件加载路径(前面路径的优先级要高于后面的路径)为：
-```yml
-spring:
- resources:
-  static-locations:
-   - classpath:/META-INF/resources/
-   - classpath:/resources/
-   - classpath:/static/
-   - classpath:/public/
+### security configurer
+
+```java
+// SecurityConfigurer
+//
+// 提供了配置(建造O类型的建造器)的配置器
+public interface SecurityConfigurer<O, B extends SecurityBuilder<O>> {
+    void init(B builder) throws Exception;
+    void configure(B builder) throws Exception;
+}
+
+// WebSecurityConfigurer
+//
+// 提供了配置(建造Filter类型的建造器)的配置器
+public interface WebSecurityConfigurer<T extends SecurityBuilder<Filter>> extends SecurityConfigurer<Filter, T> {
+}
+
+// WebSecurityConfigurerAdapter
+//
+// 提供了配置(WebSecurity类型)的配置器
+public abstract class WebSecurityConfigurerAdapter implements WebSecurityConfigurer<WebSecurity> {
+}
+
+// WebSecurity是一个(创建Filter实例)的建造器
+public final class WebSecurity extends AbstractConfiguredSecurityBuilder<Filter, WebSecurity> implements SecurityBuilder<Filter>, ApplicationContextAware {
+}
+
+// HttpSecurity是一个(创建DefaultSecurityFilterChain)实例的建造器
+public final class HttpSecurity extends AbstractConfiguredSecurityBuilder<DefaultSecurityFilterChain, HttpSecurity> implements SecurityBuilder<DefaultSecurityFilterChain>, HttpSecurityBuilder<HttpSecurity> {
+}
 ```
