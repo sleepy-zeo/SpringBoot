@@ -91,6 +91,7 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 	 * @return the {@link Filter} that represents the security filter chain
 	 * @throws Exception
 	 */
+	// Step 2. 通过webSecurity建造filter对象
 	@Bean(name = AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME)
 	public Filter springSecurityFilterChain() throws Exception {
 		boolean hasConfigurers = webSecurityConfigurers != null
@@ -101,6 +102,7 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 					});
 			webSecurity.apply(adapter);
 		}
+		// 最终跳转到webSecurity的performBuild()方法
 		return webSecurity.build();
 	}
 
@@ -127,6 +129,7 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 	 * @throws Exception
 	 */
 	// Step 1. Spring security的流程从这里开始
+	// 这里主要是创建了webSecurity对象及配置webSecurity(主要是将所有的WebSecurityConfigurerAdapter实例存放到webSecurity中)
 	@Autowired(required = false)
 	public void setFilterChainProxySecurityConfigurer(
 			ObjectPostProcessor<Object> objectPostProcessor,
@@ -157,6 +160,7 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 			previousConfig = config;
 		}
 		for (SecurityConfigurer<Filter, WebSecurity> webSecurityConfigurer : webSecurityConfigurers) {
+			// 将所有的WebSecurityConfigurerAdapter实例存放到webSecurity中
 			webSecurity.apply(webSecurityConfigurer);
 		}
 		this.webSecurityConfigurers = webSecurityConfigurers;

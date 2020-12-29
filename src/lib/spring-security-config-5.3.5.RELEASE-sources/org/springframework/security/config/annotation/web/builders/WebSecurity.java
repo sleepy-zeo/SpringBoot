@@ -284,6 +284,8 @@ public final class WebSecurity extends
 						+ "More advanced users can invoke "
 						+ WebSecurity.class.getSimpleName()
 						+ ".addSecurityFilterChainBuilder directly");
+		// Step 3. webSecurity的build的核心实现
+		// 这里的builders是所有的WebSecurityConfigurerAdapter实例初始化的时候传入的builder
 		int chainSize = ignoredRequests.size() + securityFilterChainBuilders.size();
 		List<SecurityFilterChain> securityFilterChains = new ArrayList<>(
 				chainSize);
