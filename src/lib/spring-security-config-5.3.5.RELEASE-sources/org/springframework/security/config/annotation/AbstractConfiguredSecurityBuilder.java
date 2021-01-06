@@ -15,20 +15,13 @@
  */
 package org.springframework.security.config.annotation;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.DelegatingFilterProxy;
+
+import java.util.*;
 
 /**
  * <p>
@@ -129,7 +122,9 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	public <C extends SecurityConfigurerAdapter<O, B>> C apply(C configurer)
 			throws Exception {
 		configurer.addObjectPostProcessor(objectPostProcessor);
+		// 设置configurer的builder为当前的securityBuilder
 		configurer.setBuilder((B) this);
+		// 将configurer添加到configurers中
 		add(configurer);
 		return configurer;
 	}
@@ -366,6 +361,8 @@ public abstract class AbstractConfiguredSecurityBuilder<O, B extends SecurityBui
 	private void init() throws Exception {
 		Collection<SecurityConfigurer<O, B>> configurers = getConfigurers();
 
+		// 最终调用了WebSecurityConfigurerAdapter#init(WebSecurity webSecurity)函数
+		// 将WebSecurityConfigurerAdapter对应的httpSecurity添加到webSecurity中
 		for (SecurityConfigurer<O, B> configurer : configurers) {
 			configurer.init((B) this);
 		}

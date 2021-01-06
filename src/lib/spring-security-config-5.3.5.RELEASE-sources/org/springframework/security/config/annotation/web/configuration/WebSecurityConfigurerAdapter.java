@@ -15,18 +15,8 @@
  */
 package org.springframework.security.config.annotation.web.configuration;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.aop.TargetSource;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.target.LazyInitTargetSource;
@@ -37,11 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.support.SpringFactoriesLoader;
-import org.springframework.security.authentication.AuthenticationEventPublisher;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationTrustResolver;
-import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
-import org.springframework.security.authentication.DefaultAuthenticationEventPublisher;
+import org.springframework.security.authentication.*;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -67,6 +53,9 @@ import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.accept.ContentNegotiationStrategy;
 import org.springframework.web.accept.HeaderContentNegotiationStrategy;
+
+import java.lang.reflect.Field;
+import java.util.*;
 
 /**
  * Provides a convenient base class for creating a {@link WebSecurityConfigurer}
@@ -205,8 +194,13 @@ public abstract class WebSecurityConfigurerAdapter implements
 
 		http = new HttpSecurity(objectPostProcessor, authenticationBuilder,
 				sharedObjects);
+		// 每个WebSecurityConfigurerAdapter的所有filter都是在这里配置的，主要有
+		// 1. 默认的filter
+		// 2. 加载的AbstractHttpConfigurer对应的filter
+		// 3. 自定义的filter
 		if (!disableDefaults) {
 			// @formatter:off
+			// httpSecurity的默认配置
 			http
 				.csrf().and()
 				.addFilter(new WebAsyncManagerIntegrationFilter())
@@ -228,6 +222,7 @@ public abstract class WebSecurityConfigurerAdapter implements
 				http.apply(configurer);
 			}
 		}
+		// httpSecurity的自定义配置
 		configure(http);
 		return http;
 	}
@@ -320,6 +315,8 @@ public abstract class WebSecurityConfigurerAdapter implements
 
 	public void init(final WebSecurity web) throws Exception {
 		final HttpSecurity http = getHttp();
+		// 每个adapter对应一个webSecurity
+		// 每个webSecurity又传入一个httpSecurity建造器
 		web.addSecurityFilterChainBuilder(http).postBuildAction(() -> {
 			FilterSecurityInterceptor securityInterceptor = http
 					.getSharedObject(FilterSecurityInterceptor.class);
@@ -361,6 +358,10 @@ public abstract class WebSecurityConfigurerAdapter implements
 	protected void configure(HttpSecurity http) throws Exception {
 		logger.debug("Using default configure(HttpSecurity). If subclassed this will potentially override subclass configure(HttpSecurity).");
 
+		// 这里是自定义的配置
+		// authorizeRequests创建了ExpressionUrlAuthorizationConfigurer -> FilterSecurityInterceptor这个filter
+		// formLogin创建了FormLoginConfigurer -> ..
+		// httpBasic创建了HttpBasicConfigurer -> ..
 		http
 			.authorizeRequests()
 				.anyRequest().authenticated()

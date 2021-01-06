@@ -15,10 +15,6 @@
  */
 package org.springframework.security.config.annotation.web.configuration;
 
-import java.util.List;
-import java.util.Map;
-import javax.servlet.Filter;
-
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,6 +41,10 @@ import org.springframework.security.web.FilterChainProxy;
 import org.springframework.security.web.FilterInvocation;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
+
+import javax.servlet.Filter;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -91,6 +91,7 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 	 * @return the {@link Filter} that represents the security filter chain
 	 * @throws Exception
 	 */
+	// Step 2. 通过webSecurity建造filter对象
 	@Bean(name = AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME)
 	public Filter springSecurityFilterChain() throws Exception {
 		boolean hasConfigurers = webSecurityConfigurers != null
@@ -101,6 +102,8 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 					});
 			webSecurity.apply(adapter);
 		}
+		// 最终跳转到webSecurity的doBuild()方法，doBuild()方法中最重要的是init()和performBuild()两个方法
+		// @return FilterChainProxy类的实例
 		return webSecurity.build();
 	}
 
@@ -127,24 +130,24 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 	 * @throws Exception
 	 */
 	// Step 1. Spring security的流程从这里开始
+	// 这里主要是创建了webSecurity对象及配置webSecurity(主要是将所有的WebSecurityConfigurerAdapter实例存放到webSecurity中)
 	@Autowired(required = false)
 	public void setFilterChainProxySecurityConfigurer(
 			ObjectPostProcessor<Object> objectPostProcessor,
 			@Value("#{@autowiredWebSecurityConfigurersIgnoreParents.getWebSecurityConfigurers()}") List<SecurityConfigurer<Filter, WebSecurity>> webSecurityConfigurers)
 			throws Exception {
-		// 创建了webSecurity对象
+		// 创建WebSecurity类的对象
 		webSecurity = objectPostProcessor
 				.postProcess(new WebSecurity(objectPostProcessor));
 		if (debugEnabled != null) {
 			webSecurity.debug(debugEnabled);
 		}
-
+		// 获取所有实现了WebSecurityConfigurer的实例，其实是所有实现了抽象类WebSecurityConfigurerAdapter的实例
 		webSecurityConfigurers.sort(AnnotationAwareOrderComparator.INSTANCE);
 
 		Integer previousOrder = null;
 		Object previousConfig = null;
-		// webSecurityConfigurers是所有实现了WebSecurityConfigurer的实例
-		// 其实是所有实现了WebSecurityConfigurerAdapter的实例
+
 		for (SecurityConfigurer<Filter, WebSecurity> config : webSecurityConfigurers) {
 			Integer order = AnnotationAwareOrderComparator.lookupOrder(config);
 			if (previousOrder != null && previousOrder.equals(order)) {
@@ -157,6 +160,7 @@ public class WebSecurityConfiguration implements ImportAware, BeanClassLoaderAwa
 			previousConfig = config;
 		}
 		for (SecurityConfigurer<Filter, WebSecurity> webSecurityConfigurer : webSecurityConfigurers) {
+			// 将所有的WebSecurityConfigurerAdapter实例存放到webSecurity中
 			webSecurity.apply(webSecurityConfigurer);
 		}
 		this.webSecurityConfigurers = webSecurityConfigurers;

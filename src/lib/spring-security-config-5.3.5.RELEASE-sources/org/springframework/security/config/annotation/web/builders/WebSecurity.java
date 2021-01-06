@@ -15,15 +15,8 @@
  */
 package org.springframework.security.config.annotation.web.builders;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.Filter;
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -50,12 +43,17 @@ import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.debug.DebugFilter;
-import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.DelegatingFilterProxy;
+
+import javax.servlet.Filter;
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>
@@ -284,15 +282,19 @@ public final class WebSecurity extends
 						+ "More advanced users can invoke "
 						+ WebSecurity.class.getSimpleName()
 						+ ".addSecurityFilterChainBuilder directly");
+		// Step 3. webSecurity的doBuild()的核心实现之二(另一个是init())
 		int chainSize = ignoredRequests.size() + securityFilterChainBuilders.size();
 		List<SecurityFilterChain> securityFilterChains = new ArrayList<>(
 				chainSize);
 		for (RequestMatcher ignoredRequest : ignoredRequests) {
 			securityFilterChains.add(new DefaultSecurityFilterChain(ignoredRequest));
 		}
+		// 这里的builders是所有的WebSecurityConfigurerAdapter实例在调用webSecurity#init()时传入的各自的httpSecurity
 		for (SecurityBuilder<? extends SecurityFilterChain> securityFilterChainBuilder : securityFilterChainBuilders) {
+			// 调用httpSecurity的performBuild
 			securityFilterChains.add(securityFilterChainBuilder.build());
 		}
+		// 将securityFilterChains组成FilterChainProxy返回
 		FilterChainProxy filterChainProxy = new FilterChainProxy(securityFilterChains);
 		if (httpFirewall != null) {
 			filterChainProxy.setFirewall(httpFirewall);
