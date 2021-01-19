@@ -48,6 +48,9 @@ public class SecurityContextPersistenceFilter extends GenericFilterBean {
 		this.repo = repo;
 	}
 
+	// 第一次调用的时候会将HttpSession中的securityContext绑定到当前线程中
+	// 第二次之后的调用为了防止重复绑定就直接chain链式调用了
+	// 比如浏览器访问后关闭重新request就是第一次访问，需要重新绑定相关securityContext
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 			throws IOException, ServletException {
 		HttpServletRequest request = (HttpServletRequest) req;

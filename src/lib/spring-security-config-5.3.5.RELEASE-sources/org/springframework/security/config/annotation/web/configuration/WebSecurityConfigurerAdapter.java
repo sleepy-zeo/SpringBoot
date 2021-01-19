@@ -207,7 +207,8 @@ public abstract class WebSecurityConfigurerAdapter implements
 				.exceptionHandling().and()
 				.headers().and()
 				.sessionManagement().and()
-				.securityContext().and()
+				// SecurityContextConfigurer -> SecurityContextPersistenceFilter
+				.securityContext().and() // securityContextPersistentFilter从HttpSession中获取SecurityContext，然后通过ThreadLocal将其绑定至线程
 				.requestCache().and()
 				.anonymous().and()
 				.servletApi().and()
