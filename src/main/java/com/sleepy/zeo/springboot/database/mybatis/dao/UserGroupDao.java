@@ -81,57 +81,19 @@ import java.util.List;
 @Mapper
 @Component
 public interface UserGroupDao {
+
+    /**
+     * Data注解会自动添加 set get hashCode equals toString等方法
+     */
+    @Data
     class User {
         String userId;
         String name;
         String telephone;
         boolean tokenExpired;
         boolean deleteFlag;
-
-        public String getUserId() {
-            return userId;
-        }
-
-        public void setUserId(String userId) {
-            this.userId = userId;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getTelephone() {
-            return telephone;
-        }
-
-        public void setTelephone(String telephone) {
-            this.telephone = telephone;
-        }
-
-        public boolean isTokenExpired() {
-            return tokenExpired;
-        }
-
-        public void setTokenExpired(boolean tokenExpired) {
-            this.tokenExpired = tokenExpired;
-        }
-
-        public boolean isDeleteFlag() {
-            return deleteFlag;
-        }
-
-        public void setDeleteFlag(boolean deleteFlag) {
-            this.deleteFlag = deleteFlag;
-        }
     }
 
-    /**
-     * Data注解会自动添加 set get hashCode equals toString等方法
-     */
     @Data
     class Group {
         String groupId;

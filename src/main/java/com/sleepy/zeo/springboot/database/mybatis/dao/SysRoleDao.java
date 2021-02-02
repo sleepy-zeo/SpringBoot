@@ -4,6 +4,8 @@ import com.sleepy.zeo.springboot.database.mybatis.pojo.SysRole;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Repository;
 
+// 对于xml生成jdbc接口的类不需要@Mapper注解
+// 对于接口生成jdbc接口的类，需要添加@Mapper注解
 @Mapper
 @Repository
 public interface SysRoleDao {
